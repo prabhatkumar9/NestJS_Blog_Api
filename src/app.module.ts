@@ -1,28 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TasksModule } from './tasks/tasks.module';
-// import { MongooseModule } from '@nestjs/mongoose';
-import { SignupModule } from './signup/signup.module';
-import { LoginModule } from './login/login.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(
-      { isGlobal: true }
+      { isGlobal: true}
     ),
     TypeOrmModule.forRoot({
       type: 'mongodb',
       url: process.env.DATABASE_URL,
       autoLoadEntities: true,
-      synchronize: true
+      synchronize: true,
+      ssl: true,
+      useUnifiedTopology: true,
+      useNewUrlParser: true
     }),
-    // MongooseModule.forRoot(),
-    TasksModule,
-    SignupModule,
-    LoginModule],
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
