@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
-import { MongooseModule } from '@nestjs/mongoose';
+// import { MongooseModule } from '@nestjs/mongoose';
 import { SignupModule } from './signup/signup.module';
 import { LoginModule } from './login/login.module';
 import { ConfigModule } from '@nestjs/config';
@@ -29,6 +29,3 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 export class AppModule { }
 
 
-// @1234P
-// prabhat
-// mongodb+srv://prabhat:<password>@nestapi.ufbol.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
