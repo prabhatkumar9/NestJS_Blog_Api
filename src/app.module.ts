@@ -5,10 +5,21 @@ import { TasksModule } from './tasks/tasks.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SignupModule } from './signup/signup.module';
 import { LoginModule } from './login/login.module';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb+srv://prabhat:@1234P@nestapi.ufbol.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'),
+    ConfigModule.forRoot(
+      { isGlobal: true }
+    ),
+    TypeOrmModule.forRoot({
+      type: 'mongodb',
+      url: process.env.DATABASE_URL,
+      autoLoadEntities: true,
+      synchronize: true
+    }),
+    // MongooseModule.forRoot(),
     TasksModule,
     SignupModule,
     LoginModule],
