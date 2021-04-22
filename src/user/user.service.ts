@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'entities/user.entity';
 import { User } from 'modals/user.modal';
-import { format } from 'prettier';
 import { from, Observable, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/auth/auth.service';
@@ -24,7 +23,7 @@ export class UserService {
                 newUser.email = user.email;
                 newUser.password = passHash;
 
-                return from(this.userRepo.save(user)).pipe(
+                return from(this.userRepo.save(newUser)).pipe(
                     map((resUser: User) => {
                         const { password, ...result } = resUser;
                         return result;
@@ -60,7 +59,15 @@ export class UserService {
     }
 
     deleteOne(id: string): Observable<any> {
-        return from(this.userRepo.delete(id));
+        return from(this.userRepo.delete(id)).pipe(
+            map(result => {
+                if (result) {
+                    return { message: 'deleted', 'success': true }
+                } else {
+                    return { message: 'error', 'success': false }
+                }
+            })
+        )
     }
 
     updateOne(id: string, user: User): Observable<any> {
@@ -89,16 +96,18 @@ export class UserService {
 
     validateUser(email: string, password: string): Observable<any> {
         return this.findByEmail(email).pipe(
-            switchMap((user: User) => this.authService.ComparePassword(password, user.password).pipe(
-                map((match: boolean) => {
-                    if (match) {
-                        const { password, ...result } = user;
-                        return result;
-                    } else {
-                        throw Error;
-                    }
-                })
-            ))
+            switchMap((user: User) => {
+                return this.authService.ComparePassword(password, user.password).pipe(
+                    map((match: boolean) => {
+                        if (match) {
+                            const { password, ...result } = user;
+                            return result;
+                        } else {
+                            throw Error;
+                        }
+                    })
+                )
+            })
         )
     }
     /// ************************ ///

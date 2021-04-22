@@ -15,7 +15,7 @@ export class UserEntity {
     @Column()
     password: string
 
-    @Column({ unique: true })
+    @Column()
     email: string
 
     @BeforeInsert()
