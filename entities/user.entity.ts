@@ -1,10 +1,11 @@
+import { UserRole } from "modals/user.modal";
 import { BeforeInsert, Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
 @Entity()
 export class UserEntity {
 
     @ObjectIdColumn()
-    id: ObjectID;
+    _id: ObjectID;
 
     @Column()
     name: string
@@ -15,8 +16,11 @@ export class UserEntity {
     @Column()
     password: string
 
-    @Column()
+    @Column({ unique: true })
     email: string
+
+    @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+    role: UserRole
 
     @BeforeInsert()
     emailToLowerCase() {
