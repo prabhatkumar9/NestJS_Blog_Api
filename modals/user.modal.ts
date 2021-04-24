@@ -1,8 +1,8 @@
 
-import { ObjectID } from "typeorm";
+// import { ObjectID } from "typeorm";
 
 export interface User {
-    _id?: ObjectID;
+    _id?: string;
     name?: string;
     username?: string;
     email?: string;

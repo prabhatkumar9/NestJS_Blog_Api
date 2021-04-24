@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'entities/user.entity';
-import { User } from 'modals/user.modal';
+import { User, UserRole } from 'modals/user.modal';
 import { from, Observable, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
+
 
 @Injectable()
 export class UserService {
@@ -22,7 +23,7 @@ export class UserService {
                 newUser.username = user.username;
                 newUser.email = user.email;
                 newUser.password = passHash;
-                newUser.role = user.role;
+                newUser.role = UserRole.USER;
 
                 return from(this.userRepo.save(newUser)).pipe(
                     map((resUser: User) => {
@@ -38,6 +39,7 @@ export class UserService {
     findOne(id: any): Observable<User> {
         return from(this.userRepo.findOne(id)).pipe(
             map((resUser: User) => {
+                // console.log(resUser);
                 const { password, ...result } = resUser;
                 return result;
             }),
@@ -49,8 +51,32 @@ export class UserService {
         return from(this.userRepo.findOne({ email }));
     }
 
-    findAll(): Observable<User[]> {
-        return from(this.userRepo.find()).pipe(
+    findAll(page, take, search, sort): Observable<User[]> {
+
+        let query = {};
+
+        if (search) {
+            query = {
+                where: {
+                    $or: [
+                        { name: new RegExp(search.toString(), 'i') },
+                        { username: new RegExp(search.toString(), 'i') },
+                        { email: new RegExp(search.toString(), 'i') },
+                    ]
+                }
+            }
+        }
+
+        if (sort) {
+            query = {
+                ...query,
+                order: {
+                    name: sort.toString().toUpperCase()
+                }
+            }
+        }
+
+        return from(this.userRepo.find({ ...query, take, skip: (page - 1) * take })).pipe(
             map((resUserArr: User[]) => {
                 resUserArr.forEach(usr => delete usr.password);
                 return resUserArr;
@@ -58,6 +84,11 @@ export class UserService {
             catchError(err => throwError(err))
         )
     }
+
+    countDbDocs(): Observable<any> {
+        return from(this.userRepo.count())
+    }
+
 
     deleteOne(id: string): Observable<any> {
         return from(this.userRepo.delete(id)).pipe(
@@ -74,6 +105,7 @@ export class UserService {
     updateOne(id: string, user: User): Observable<any> {
         delete user.password;
         delete user.email;
+        delete user.role;
         return from(this.userRepo.update(id, user));
     }
 

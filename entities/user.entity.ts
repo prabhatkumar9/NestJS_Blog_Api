@@ -5,7 +5,7 @@ import { BeforeInsert, Column, Entity, ObjectID, ObjectIdColumn } from "typeorm"
 export class UserEntity {
 
     @ObjectIdColumn()
-    _id: ObjectID;
+    _id: string;
 
     @Column()
     name: string
