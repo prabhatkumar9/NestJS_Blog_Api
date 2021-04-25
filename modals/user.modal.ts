@@ -8,6 +8,7 @@ export interface User {
     email?: string;
     password?: string;
     role?: UserRole;
+    profilePic?: string;
 }
 
 export enum UserRole {

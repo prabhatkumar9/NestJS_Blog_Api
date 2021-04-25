@@ -113,6 +113,16 @@ export class UserService {
         return from(this.userRepo.update(id, body));
     }
 
+    updateProfilePic(id: string, profilePic: string): Observable<any> {
+        return from(this.userRepo.update(id, { profilePic }))
+        return from(this.userRepo.update(id, { "profilePic": profilePic })).pipe(
+            map(res => {
+                console.log(res);
+                return res;
+            })
+        )
+    }
+
 
     /// ************************ ///
     // ---authentication funcs--- //

@@ -1,5 +1,5 @@
 import { UserRole } from "modals/user.modal";
-import { BeforeInsert, Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, ObjectIdColumn } from "typeorm";
 
 @Entity()
 export class UserEntity {
@@ -18,6 +18,9 @@ export class UserEntity {
 
     @Column({ unique: true })
     email: string
+
+    @Column()
+    profilePic: string
 
     @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
     role: UserRole

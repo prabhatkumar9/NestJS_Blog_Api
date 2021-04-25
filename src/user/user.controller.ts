@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query, Request } from '@nestjs/common';
 import { User, UserRole } from 'modals/user.modal';
-import { combineLatest, forkJoin, from, Observable, of } from 'rxjs';
+import { forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
@@ -66,4 +66,24 @@ export class UserController {
         return this.userService.updateRoleOfUser(id, body);
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Post('uploadProfile')
+    uploadFile(@Body() body, @Request() req): Observable<any> {
+        // console.log(body);
+        return this.userService.updateProfilePic(req._id, body.profilepic);
+    }
+
+
+
 }
+
+//  {
+    //     storage: diskStorage({
+    //         destination: '../uploads/profileimages',
+    //         filename: (res, file, cb) => {
+    //             const filename: string = path.parse(file.originalname).name.replace(/\s/g, '') + 'fjs';
+    //             const extnsn: string = path.parse(file.originalname).ext;
+    //             cb(null, `${filename}${extnsn}`)
+    //         }
+    //     })
+    // }
