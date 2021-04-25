@@ -22,6 +22,7 @@ export class UserService {
                 newUser.name = user.name;
                 newUser.username = user.username;
                 newUser.email = user.email;
+                newUser.profilePic = '';
                 newUser.password = passHash;
                 newUser.role = UserRole.USER;
 
@@ -109,16 +110,19 @@ export class UserService {
         return from(this.userRepo.update(id, user));
     }
 
-    updateRoleOfUser(id: any, body: any): Observable<any> {
-        return from(this.userRepo.update(id, body));
+    updateRoleOfUser(id: any, user: User): Observable<any> {
+        return from(this.userRepo.update(id, user));
     }
 
-    updateProfilePic(id: string, profilePic: string): Observable<any> {
-        return from(this.userRepo.update(id, { profilePic }))
-        return from(this.userRepo.update(id, { "profilePic": profilePic })).pipe(
+    updateProfilePic(id: string, user: User): Observable<any> {
+        // return from(this.userRepo.update(id, user))
+        return from(this.userRepo.update(id, user)).pipe(
             map(res => {
-                console.log(res);
-                return res;
+                if (res) {
+                    return { success: true, message: 'profile updated successfully !' }
+                } else {
+                    return { success: false, message: 'something went wrong !' }
+                }
             })
         )
     }

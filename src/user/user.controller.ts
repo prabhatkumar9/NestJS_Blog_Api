@@ -68,9 +68,11 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Post('uploadProfile')
-    uploadFile(@Body() body, @Request() req): Observable<any> {
-        // console.log(body);
-        return this.userService.updateProfilePic(req._id, body.profilepic);
+    uploadFile(@Body() user:User, @Request() req): Observable<any> {
+        console.log(user);
+        console.log(req.user.user._id);
+        return this.userService.updateProfilePic(req.user.user._id, user);
+       
     }
 
 
