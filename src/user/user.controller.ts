@@ -5,6 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserIsUser } from 'src/auth/guards/userIsUser.guard';
 import { UserService } from './user.service';
 
 
@@ -56,6 +57,7 @@ export class UserController {
         return this.userService.deleteOne(id);
     }
 
+    @UseGuards(JwtAuthGuard, UserIsUser)
     @Put(':id')
     UpdateOne(@Param('id') id: any, @Body() user: User): Observable<any> {
         return this.userService.updateOne(id, user);
@@ -68,11 +70,11 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Post('uploadProfile')
-    uploadFile(@Body() user:User, @Request() req): Observable<any> {
+    uploadFile(@Body() user: User, @Request() req): Observable<any> {
         console.log(user);
         console.log(req.user.user._id);
         return this.userService.updateProfilePic(req.user.user._id, user);
-       
+
     }
 
 

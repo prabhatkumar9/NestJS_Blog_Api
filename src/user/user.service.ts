@@ -150,7 +150,7 @@ export class UserService {
                 return this.authService.ComparePassword(password, user.password).pipe(
                     map((match: boolean) => {
                         if (match) {
-                            const { password, ...result } = user;
+                            const { password, profilePic, ...result } = user;
                             return result;
                         } else {
                             throw Error;
