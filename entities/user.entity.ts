@@ -1,5 +1,6 @@
 import { UserRole } from "modals/user.modal";
-import { BeforeInsert, Column, Entity, ObjectIdColumn } from "typeorm";
+import { BlogEntity } from "src/blog/blog.entity";
+import { BeforeInsert, Column, Entity, ObjectIdColumn, OneToMany } from "typeorm";
 
 @Entity()
 export class UserEntity {
@@ -24,6 +25,9 @@ export class UserEntity {
 
     @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
     role: UserRole
+
+    @OneToMany(type => BlogEntity, blog => blog.author)
+    blogEntries: BlogEntity[];
 
     @BeforeInsert()
     emailToLowerCase() {

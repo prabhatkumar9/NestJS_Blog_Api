@@ -1,5 +1,4 @@
-
-// import { ObjectID } from "typeorm";
+import { Blog } from "src/blog/blog.model";
 
 export interface User {
     _id?: string;
@@ -9,6 +8,7 @@ export interface User {
     password?: string;
     role?: UserRole;
     profilePic?: string;
+    blogEntries?: Blog[];
 }
 
 export enum UserRole {
