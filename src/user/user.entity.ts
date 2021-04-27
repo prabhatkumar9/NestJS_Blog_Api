@@ -1,4 +1,4 @@
-import { UserRole } from "modals/user.modal";
+import { UserRole } from "src/user/user.model";
 import { BlogEntity } from "src/blog/blog.entity";
 import { BeforeInsert, Column, Entity, ObjectIdColumn, OneToMany } from "typeorm";
 

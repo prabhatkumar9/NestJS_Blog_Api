@@ -1,4 +1,4 @@
-import { User } from "modals/user.modal";
+import { User } from "src/user/user.model";
 
 export interface Blog {
     _id?: string;

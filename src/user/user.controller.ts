@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query, Request } from '@nestjs/common';
-import { User, UserRole } from 'modals/user.modal';
+import { User, UserRole } from 'src/user/user.model';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
