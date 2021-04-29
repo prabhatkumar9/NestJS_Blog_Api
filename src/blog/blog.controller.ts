@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Request, UseGuards, Query, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards, Query, Param, Put } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
+import { UserIsAuthorGuard } from 'src/auth/userIsAuthor.guard';
 import { Blog } from './blog.model';
 import { BlogService } from './blog.service';
 
@@ -29,5 +30,11 @@ export class BlogController {
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.blogService.findOneById(id);
+    }
+
+    @UseGuards(JwtAuthGuard, UserIsAuthorGuard)
+    @Put(':id')
+    updateOne(@Param('id') id: string, @Body() blog: Blog): Observable<Blog> {
+        return this.blogService.updateOne(id, blog);
     }
 }

@@ -47,4 +47,10 @@ export class BlogService {
         return from(this.blogRepo.findOne(id, { relations: ['author'] }));
     }
 
+    updateOne(id, blog): Observable<Blog> {
+        return from(this.blogRepo.update(id, blog)).pipe(
+            switchMap(() => this.findOneById(id))
+        )
+    }
+
 }
