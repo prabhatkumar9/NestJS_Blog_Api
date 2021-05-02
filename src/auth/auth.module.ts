@@ -5,15 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogEntity } from 'src/blog/blog.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { AuthService } from './auth.service';
+import { AuthorGuard } from './guards/author.guard';
 import { JwtAuthGuard } from './guards/guard';
 import { JwtStrategy } from './guards/jwt-strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { UserIsUser } from './guards/userIsUser.guard';
-import { UserIsAuthorGuard } from './guards/userIsAuthor.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity,BlogEntity]),
+    TypeOrmModule.forFeature([UserEntity, BlogEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -23,7 +23,7 @@ import { UserIsAuthorGuard } from './guards/userIsAuthor.guard';
       })
     }),
   ],
-  providers: [AuthService, RolesGuard, JwtAuthGuard, JwtStrategy, UserIsUser, UserIsAuthorGuard],
+  providers: [AuthService, RolesGuard, JwtAuthGuard, JwtStrategy, UserIsUser, AuthorGuard],
   exports: [AuthService]
 })
 export class AuthModule { }

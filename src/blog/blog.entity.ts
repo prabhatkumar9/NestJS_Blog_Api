@@ -44,7 +44,6 @@ export class BlogEntity {
     @Column({ default: false })
     isPublished: boolean;
 
-    @ManyToOne(type => UserEntity, user => user.blogEntries, { lazy: true })
-    @JoinColumn()
+    @ManyToOne(type => UserEntity, user => user.blogEntries)
     author: User;
 }

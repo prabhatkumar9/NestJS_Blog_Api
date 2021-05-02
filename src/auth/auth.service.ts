@@ -31,7 +31,8 @@ export class AuthService {
 
 
     /// ********** users funcs ******************
-    findOne(id: any): Observable<User> {
+    findUser(id: any): Observable<any> {
+        console.log("id :::::::: ", id);
         return from(this.userRepo.findOne(id)).pipe(
             map((resUser: User) => {
                 const { password, ...result } = resUser;
@@ -41,9 +42,10 @@ export class AuthService {
         )
     }
 
+
     // *********** blogs funcs *******************
     findBlogById(id: number) {
-        return from(this.blogRepo.findOne(id));
+        return from(this.blogRepo.findOne(id, { relations: ['author'] }));
     }
 
 

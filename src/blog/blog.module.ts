@@ -13,6 +13,7 @@ import { UserModule } from 'src/user/user.module';
     UserModule
   ],
   providers: [BlogService],
-  controllers: [BlogController]
+  controllers: [BlogController],
+  exports: [BlogService]
 })
 export class BlogModule { }

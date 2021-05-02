@@ -27,8 +27,7 @@ export class UserEntity {
     @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
     role: UserRole
 
-    @OneToMany(type => BlogEntity, blog => blog.author, { lazy: true })
-    @JoinColumn()
+    @OneToMany(type => BlogEntity, blog => blog.author)
     blogEntries: Blog[];
 
     @BeforeInsert()

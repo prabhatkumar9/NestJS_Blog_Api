@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { from, Observable, of } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
-import { User } from 'src/user/user.model';
-import { UserService } from 'src/user/user.service';
+import { switchMap } from 'rxjs/operators';
 import { FindManyOptions, Repository } from 'typeorm';
 import { BlogEntity } from './blog.entity';
 import { Blog } from './blog.model';
@@ -15,7 +13,6 @@ export class BlogService {
 
     constructor(
         @InjectRepository(BlogEntity) private readonly blogRepo: Repository<BlogEntity>,
-        private userService: UserService
     ) { }
 
     create(user: any, blog: Blog): Observable<Blog> {
@@ -42,15 +39,15 @@ export class BlogService {
         return from(this.blogRepo.find(options));
     }
 
-    findByUserId(id: string): Observable<Blog[]> {
-        return from(this.blogRepo.find());
+    findByUserId(id: any): Observable<Blog[]> {
+        return from(this.blogRepo.find({ where: { author: id } }));
     }
 
-    findOneById(id: string): Observable<Blog> {
-        return from(this.blogRepo.findOne(id, { relations: ['author'], select: ['author', 'body', '_id'] }))
-            .pipe(
-                tap(res => console.log(res))
-            )
+    findOneById(id: any): Observable<Blog> {
+        return from(this.blogRepo.findOne(id, { relations: ['author'] }))
+        // .pipe(
+        //     tap(res => console.log(res))
+        // )
     }
 
     updateOne(id, blog): Observable<Blog> {
