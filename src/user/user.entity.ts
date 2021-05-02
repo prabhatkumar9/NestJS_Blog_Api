@@ -1,12 +1,13 @@
 import { UserRole } from "src/user/user.model";
 import { BlogEntity } from "src/blog/blog.entity";
-import { BeforeInsert, Column, Entity, ObjectIdColumn, OneToMany } from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ObjectIdColumn, OneToMany, PrimaryColumn ,ObjectID, PrimaryGeneratedColumn} from "typeorm";
+import { Blog } from "src/blog/blog.model";
 
 @Entity()
 export class UserEntity {
 
-    @ObjectIdColumn()
-    _id: string;
+    @PrimaryGeneratedColumn()
+    _id: number;
 
     @Column()
     name: string
@@ -27,7 +28,7 @@ export class UserEntity {
     role: UserRole
 
     @OneToMany(type => BlogEntity, blog => blog.author)
-    blogEntries: BlogEntity[];
+    blogEntries: Blog[];
 
     @BeforeInsert()
     emailToLowerCase() {

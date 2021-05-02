@@ -10,7 +10,7 @@ export class UserIsUser implements CanActivate {
         // console.log(user);
         // console.log(params);
         let hasPermission: boolean = false;
-        if (params.id === user._id) {
+        if (Number(params.id) === Number(user._id)) {
             hasPermission = true;
         }
         return user && hasPermission;

@@ -1,11 +1,13 @@
 import { UserEntity } from "src/user/user.entity";
-import { BeforeUpdate, Column, Entity, ManyToOne, ObjectIdColumn } from "typeorm";
+import { User } from "src/user/user.model";
+import { BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn, PrimaryGeneratedColumn,ObjectID } from "typeorm";
+
 
 @Entity('blog_entry')
 export class BlogEntity {
 
-    @ObjectIdColumn()
-    _id: string;
+    @PrimaryGeneratedColumn()
+    _id: number;
 
     @Column()
     title: string;
@@ -43,5 +45,5 @@ export class BlogEntity {
     isPublished: boolean;
 
     @ManyToOne(type => UserEntity, user => user.blogEntries)
-    author: UserEntity;
+    author: User;
 }
