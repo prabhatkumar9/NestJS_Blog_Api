@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { from, Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import { User } from 'src/user/user.model';
 import { UserService } from 'src/user/user.service';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { BlogEntity } from './blog.entity';
 import { Blog } from './blog.model';
 
@@ -18,7 +18,9 @@ export class BlogService {
         private userService: UserService
     ) { }
 
-    create(user: User, blog: Blog): Observable<Blog> {
+    create(user: any, blog: Blog): Observable<Blog> {
+        delete user.iat
+        delete user.exp
         blog.author = user;
         return this.generateSlug(blog.title).pipe(
             switchMap((slug: string) => {
@@ -33,18 +35,22 @@ export class BlogService {
     }
 
     findAll(): Observable<Blog[]> {
-        return from(this.blogRepo.find({ relations: ['author'] }));
+        const options: FindManyOptions = {
+            relations: ["author"],
+            take: 10
+        };
+        return from(this.blogRepo.find(options));
     }
 
-    findByUserId(userId: string): Observable<Blog[]> {
-        return from(this.blogRepo.find({
-            where: { author: userId },
-            relations: ['author']
-        }));
+    findByUserId(id: string): Observable<Blog[]> {
+        return from(this.blogRepo.find());
     }
 
     findOneById(id: string): Observable<Blog> {
-        return from(this.blogRepo.findOne(id, { relations: ['author'] }));
+        return from(this.blogRepo.findOne(id, { relations: ['author'], select: ['author', 'body', '_id'] }))
+            .pipe(
+                tap(res => console.log(res))
+            )
     }
 
     updateOne(id, blog): Observable<Blog> {

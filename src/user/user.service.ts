@@ -38,9 +38,8 @@ export class UserService {
     }
 
     findOne(id: any): Observable<User> {
-        return from(this.userRepo.findOne(id, { relations: ['blogEntries'] })).pipe(
+        return from(this.userRepo.findOne(id)).pipe(
             map((resUser: User) => {
-                // console.log(resUser);
                 const { password, ...result } = resUser;
                 return result;
             }),
@@ -49,7 +48,7 @@ export class UserService {
     }
 
     findByEmail(email: string): Observable<User> {
-        return from(this.userRepo.findOne({ email }));
+        return from(this.userRepo.findOne({ where: { email }, select: ['password', 'username', 'email', 'name', 'role', '_id', 'profilePic'] }));
     }
 
     findAll(page, take, search, sort): Observable<User[]> {
@@ -92,8 +91,8 @@ export class UserService {
     }
 
 
-    deleteOne(id: string): Observable<any> {
-        return from(this.userRepo.delete(id)).pipe(
+    deleteOne(id: any): Observable<any> {
+        return from(this.userRepo.delete(Number(id))).pipe(
             map(result => {
                 if (result) {
                     return { message: 'deleted', 'success': true }
@@ -104,7 +103,7 @@ export class UserService {
         )
     }
 
-    updateOne(id: string, user: User): Observable<any> {
+    updateOne(id: any, user: User): Observable<any> {
         delete user.password;
         delete user.email;
         delete user.role;
@@ -115,7 +114,7 @@ export class UserService {
         return from(this.userRepo.update(id, user));
     }
 
-    updateProfilePic(id: string, user: User): Observable<any> {
+    updateProfilePic(id: any, user: User): Observable<any> {
         // return from(this.userRepo.update(id, user))
         return from(this.userRepo.update(id, user)).pipe(
             map(res => {
@@ -148,6 +147,7 @@ export class UserService {
     validateUser(email: string, password: string): Observable<any> {
         return this.findByEmail(email).pipe(
             switchMap((user: User) => {
+                // console.log(user);
                 return this.authService.ComparePassword(password, user.password).pipe(
                     map((match: boolean) => {
                         if (match) {

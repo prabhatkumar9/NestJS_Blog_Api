@@ -1,17 +1,19 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { UserModule } from 'src/user/user.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BlogEntity } from 'src/blog/blog.entity';
+import { UserEntity } from 'src/user/user.entity';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/guard';
 import { JwtStrategy } from './guards/jwt-strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { UserIsUser } from './guards/userIsUser.guard';
-import { UserIsAuthorGuard } from './userIsAuthor.guard';
+import { UserIsAuthorGuard } from './guards/userIsAuthor.guard';
 
 @Module({
   imports: [
-    forwardRef(() => UserModule),
+    TypeOrmModule.forFeature([UserEntity,BlogEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -19,9 +21,9 @@ import { UserIsAuthorGuard } from './userIsAuthor.guard';
         secret: configService.get('JWT_SECRET'),
         signOptions: { expiresIn: '10000s' }
       })
-    })],
-  // controllers: [AuthController],
-  providers: [AuthService, RolesGuard, JwtAuthGuard, JwtStrategy, UserIsUser,UserIsAuthorGuard],
+    }),
+  ],
+  providers: [AuthService, RolesGuard, JwtAuthGuard, JwtStrategy, UserIsUser, UserIsAuthorGuard],
   exports: [AuthService]
 })
 export class AuthModule { }
