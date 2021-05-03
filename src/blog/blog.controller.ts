@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Request, UseGuards, Query, Param, Put } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { forkJoin, from, Observable } from 'rxjs';
 import { AuthorGuard } from 'src/auth/guards/author.guard';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
 import { Blog } from './blog.model';
@@ -18,14 +18,24 @@ export class BlogController {
     }
 
     @Get()
-    findBlogs(@Query('userId') userId: string): Observable<Blog[]> {
-        // console.log("userId id  :: ", userId);
+    findBlogs(
+        @Query('userId') userId: string,
+        @Query('page') page: number | string = 1,
+        @Query('take') take: number | string = 10,
+        @Query('search') search: string = '',
+        @Query('sort') sort: string = 'asc',
+    ): Observable<any> {
+        let count$: Observable<number>;
+        let blogs$: Observable<Blog[]>;
         if (userId == null) {
-            return this.blogService.findAll();
+            count$ = this.blogService.countDbDocs();
+            blogs$ = this.blogService.findAll(page, take, search, sort);
         } else {
-            // console.log("else part");
-            return this.blogService.findByUserId(Number(userId));
+            count$ = this.blogService.countDbDocs(search,Number(userId));
+            blogs$ = this.blogService.findByUserId(Number(userId), page, take, search, sort);
         }
+
+        return from(forkJoin({ count: count$, data: blogs$ }));
     }
 
     @Get(':id')
@@ -34,7 +44,7 @@ export class BlogController {
         return this.blogService.findOneById(id);
     }
 
-    @UseGuards(JwtAuthGuard,AuthorGuard)
+    @UseGuards(JwtAuthGuard, AuthorGuard)
     @Put(':id')
     updateOne(@Param('id') id: string, @Body() blog: Blog): Observable<Blog> {
         return this.blogService.updateOne(id, blog);

@@ -76,7 +76,6 @@ export class UserService {
             }
         }
 
-
         return from(this.userRepo.find({ ...query, take, skip: (page - 1) * take, relations: ['blogEntries'] })).pipe(
             map((resUserArr: User[]) => {
                 resUserArr.forEach(usr => delete usr.password);
@@ -86,8 +85,21 @@ export class UserService {
         )
     }
 
-    countDbDocs(): Observable<any> {
-        return from(this.userRepo.count())
+    countDbDocs(search): Observable<any> {
+        let query = {};
+        if (search) {
+            query = {
+                where: {
+                    $or: [
+                        { name: new RegExp(search.toString(), 'i') },
+                        { username: new RegExp(search.toString(), 'i') },
+                        { email: new RegExp(search.toString(), 'i') },
+                    ]
+                }
+            }
+        };
+
+        return from(this.userRepo.count(query));
     }
 
 

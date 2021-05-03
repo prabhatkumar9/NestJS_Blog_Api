@@ -48,7 +48,7 @@ export class UserController {
         @Query('sort') sort: string = 'asc',
 
     ): Observable<any> {
-        let count$ = this.userService.countDbDocs();
+        let count$ = this.userService.countDbDocs(search);
         let data$ = this.userService.findAll(page, take, search, sort);
         return from(forkJoin({ count: count$, data: data$ }));
     }
