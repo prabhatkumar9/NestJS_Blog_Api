@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserRole } from './user.model';
-import { User as usermd, UserDocument } from './user.entity';
+import { IUser, UserRole } from './user.model';
+import { User, UserDocument } from './user.entity';
 import { from, Observable, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/auth/auth.service';
@@ -12,11 +12,11 @@ import { Model } from 'mongoose';
 @Injectable()
 export class UserService {
     constructor(
-        @InjectModel(usermd.name) private userModel: Model<UserDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
         private authService: AuthService
     ) { }
 
-    create(user: User): Observable<User> {
+    create(user: IUser): Observable<IUser> {
         return this.authService.hashPassword(user.password).pipe(
             switchMap((passHash: string) => {
                 const newUser = new this.userModel();
@@ -28,7 +28,7 @@ export class UserService {
                 newUser.role = UserRole.USER;
 
                 return from(this.userModel.create(newUser)).pipe(
-                    map((resUser: User) => {
+                    map((resUser: IUser) => {
                         const { password, ...result } = resUser;
                         return result;
                     }),
@@ -38,7 +38,7 @@ export class UserService {
         )
     }
 
-    findOne(id: any): Observable<User> {
+    findOne(id: any): Observable<any> {
         return from(this.userModel.findOne(id)).pipe(
             map((resUser: User) => {
                 const { password, ...result } = resUser;
@@ -48,14 +48,12 @@ export class UserService {
         )
     }
 
-    findByEmail(email: string): Observable<User> {
+    findByEmail(email: string): Observable<UserDocument> {
         return from(this.userModel.findOne({ where: { email }, select: ['password', 'username', 'email', 'name', 'role', '_id', 'profilePic'] }));
     }
 
     findAll(page, take, search, sort): Observable<User[]> {
-
         let query = {};
-
         if (search) {
             query = {
                 where: {

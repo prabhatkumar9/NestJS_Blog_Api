@@ -3,8 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { from, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-// import { Blog } from './blog.model';
+import { IBlog } from './blog.model';
 import { Blog, BlogDocument } from './blog.entity';
+import { IUser } from 'src/user/user.model';
 const slugify = require('slugify');
 
 @Injectable()
@@ -12,10 +13,8 @@ export class BlogService {
 
     constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) { }
 
-    create(user: any, blog: Blog): Observable<Blog> {
-        delete user.iat
-        delete user.exp
-        blog.author = user;
+    create(user: IUser, blog: IBlog): Observable<BlogDocument> {
+        blog.author = user._id;
         return this.generateSlug(blog.title).pipe(
             switchMap((slug: string) => {
                 blog.slug = slug;
@@ -28,7 +27,7 @@ export class BlogService {
         return of(slugify(title));
     }
 
-    findAll(page, take, search, sort): Observable<Blog[]> {
+    findAll(page, take, search, sort): Observable<IBlog[]> {
 
         let options: any = {};
 
@@ -56,7 +55,7 @@ export class BlogService {
         }));
     }
 
-    findByUserId(id: number, page, take, search, sort): Observable<Blog[]> {
+    findByUserId(id: number, page, take, search, sort): Observable<IBlog[]> {
 
         let options: any = {
             relations: ["author"],
@@ -106,15 +105,15 @@ export class BlogService {
         return from(this.blogModel.count())
     }
 
-    findOneById(id: any): Observable<Blog> {
+    findOneById(id: any): Observable<IBlog> {
         return from(this.blogModel.findOne(id, { relations: ['author'] }))
         // .pipe(
         //     tap(res => console.log(res))
         // )
     }
 
-    updateOne(id, blog): Observable<Blog> {
-        return from(this.blogModel.update(id, blog)).pipe(
+    updateOne(id, blog: IBlog): Observable<IBlog> {
+        return from(this.blogModel.updateOne(id, blog)).pipe(
             switchMap(() => this.findOneById(id))
         )
     }

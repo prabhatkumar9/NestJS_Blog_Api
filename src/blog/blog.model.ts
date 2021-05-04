@@ -1,7 +1,8 @@
-import { User } from "src/user/user.model";
+import { ObjectId } from "bson";
+import { IUser } from "src/user/user.model";
 
-export interface Blog {
-    _id?: string;
+export interface IBlog {
+    _id?: ObjectId;
     title?: string;
     slug?: string;
     description?: string;
@@ -12,5 +13,5 @@ export interface Blog {
     headerImage?: string
     publishedAt?: Date;
     isPublished?: boolean;
-    author?: User;
+    author?: ObjectId;
 }

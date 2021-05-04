@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query, Request } from '@nestjs/common';
-import { User, UserRole } from 'src/user/user.model';
+import { IUser, UserRole } from 'src/user/user.model';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
@@ -14,15 +14,15 @@ export class UserController {
     constructor(private userService: UserService) { }
 
     @Post()
-    create(@Body() user: User): Observable<User | Object> {
+    create(@Body() user: IUser): Observable<IUser | Object> {
         return this.userService.create(user).pipe(
-            map((user: User) => user),
+            map((user: IUser) => user),
             catchError((err) => of({ error: err.message }))
         );
     }
 
     @Post('login')
-    login(@Body() body: User): Observable<any> {
+    login(@Body() body: IUser): Observable<any> {
         return this.userService.login(body).pipe(
             map((token: string) => {
                 return { token }
@@ -34,7 +34,7 @@ export class UserController {
     @hasRoles(UserRole.ADMIN)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Get(':id')
-    findOne(@Param() params): Observable<User> {
+    findOne(@Param() params): Observable<IUser> {
         return this.userService.findOne(params.id);
     }
 
@@ -63,7 +63,7 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard, UserIsUser)
     @Put(':id')
-    UpdateOne(@Param('id') id: any, @Body() user: User): Observable<any> {
+    UpdateOne(@Param('id') id: any, @Body() user: IUser): Observable<any> {
         return this.userService.updateOne(id, user);
     }
 
@@ -76,7 +76,7 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Post('uploadProfile')
-    uploadFile(@Body() user: User, @Request() req): Observable<any> {
+    uploadFile(@Body() user: IUser, @Request() req): Observable<any> {
         return this.userService.updateProfilePic(Number(req.user.user._id), user);
     }
 

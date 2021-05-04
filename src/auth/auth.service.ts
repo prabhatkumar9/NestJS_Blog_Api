@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Blog, BlogDocument } from 'src/blog/blog.entity';
 import { User, UserDocument } from 'src/user/user.entity';
+import { IUser } from 'src/user/user.model';
 const bcrypt = require('bcrypt');
 
 @Injectable()
@@ -31,9 +32,9 @@ export class AuthService {
 
     /// ********** users funcs ******************
     findUser(id: any): Observable<any> {
-        console.log("id :::::::: ", id);
+        // console.log("id :::::::: ", id);
         return from(this.userModel.findOne(id)).pipe(
-            map((resUser: User) => {
+            map((resUser: IUser) => {
                 const { password, ...result } = resUser;
                 return result;
             }),

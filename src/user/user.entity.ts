@@ -3,6 +3,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { Blog } from "src/blog/blog.entity";
+import { IBlog } from "src/blog/blog.model";
+import { ObjectId } from "bson";
 
 
 export type UserDocument = User & Document
@@ -10,8 +12,8 @@ export type UserDocument = User & Document
 @Schema()
 export class User {
 
-    @Prop()
-    _id: string;
+    // @Prop()
+    // _id: string;
 
     @Prop()
     name: string
@@ -33,7 +35,7 @@ export class User {
 
     // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Owner' })
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }] })
-    blogEntries: Blog[];
+    blogEntries: ObjectId[];
 
 }
 

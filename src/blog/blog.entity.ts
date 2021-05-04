@@ -3,14 +3,16 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { User } from 'src/user/user.entity';
+import { IUser } from 'src/user/user.model';
+import { ObjectId } from 'bson';
 
 export type BlogDocument = Blog & Document
 
 @Schema()
 export class Blog {
 
-    @Prop()
-    _id: string;
+    // @Prop()
+    // _id: string;
 
     @Prop()
     title: string;
@@ -43,7 +45,7 @@ export class Blog {
     isPublished: boolean;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-    author: User;
+    author: ObjectId;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

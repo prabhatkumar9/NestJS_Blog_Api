@@ -1,14 +1,16 @@
-import { Blog } from "src/blog/blog.model";
+// import { IBlog } from "src/blog/blog.model";
 
-export interface User {
-    _id?: string;
+import { ObjectId } from "bson";
+
+export interface IUser {
+    _id?: ObjectId;
     name?: string;
     username?: string;
     email?: string;
     password?: string;
     role?: UserRole;
     profilePic?: string;
-    blogEntries?: Blog[];
+    blogEntries?: ObjectId[];
 }
 
 export enum UserRole {

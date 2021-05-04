@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Request, UseGuards, Query, Param, Put } fr
 import { forkJoin, from, Observable } from 'rxjs';
 import { AuthorGuard } from 'src/auth/guards/author.guard';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
-import { Blog } from './blog.model';
+import { IBlog } from './blog.model';
 import { BlogService } from './blog.service';
 
 @Controller('blog')
@@ -12,7 +12,7 @@ export class BlogController {
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    create(@Body() blog: Blog, @Request() req) {
+    create(@Body() blog: IBlog, @Request() req) {
         const user = req.user.user;
         return this.blogService.create(user, blog);
     }
@@ -26,7 +26,7 @@ export class BlogController {
         @Query('sort') sort: string = 'asc',
     ): Observable<any> {
         let count$: Observable<number>;
-        let blogs$: Observable<Blog[]>;
+        let blogs$: Observable<IBlog[]>;
         if (userId == null) {
             count$ = this.blogService.countDbDocs();
             blogs$ = this.blogService.findAll(page, take, search, sort);
@@ -46,7 +46,7 @@ export class BlogController {
 
     @UseGuards(JwtAuthGuard, AuthorGuard)
     @Put(':id')
-    updateOne(@Param('id') id: string, @Body() blog: Blog): Observable<Blog> {
+    updateOne(@Param('id') id: string, @Body() blog: IBlog): Observable<IBlog> {
         return this.blogService.updateOne(id, blog);
     }
 }
