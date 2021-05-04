@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlogEntity } from 'src/blog/blog.entity';
-import { UserEntity } from 'src/user/user.entity';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Blog, BlogSchema } from 'src/blog/blog.entity';
+import { User, UserSchema } from 'src/user/user.entity';
 import { AuthService } from './auth.service';
 import { AuthorGuard } from './guards/author.guard';
 import { JwtAuthGuard } from './guards/guard';
@@ -13,7 +13,10 @@ import { UserIsUser } from './guards/userIsUser.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, BlogEntity]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Blog.name, schema: BlogSchema }
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

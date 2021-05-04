@@ -1,24 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'src/user/user.entity';
-import { User, UserRole } from 'src/user/user.model';
+import { User, UserRole } from './user.model';
+import { User as usermd, UserDocument } from './user.entity';
 import { from, Observable, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/auth/auth.service';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
 
 
 @Injectable()
 export class UserService {
     constructor(
-        @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
+        @InjectModel(usermd.name) private userModel: Model<UserDocument>,
         private authService: AuthService
     ) { }
 
     create(user: User): Observable<User> {
         return this.authService.hashPassword(user.password).pipe(
             switchMap((passHash: string) => {
-                const newUser = new UserEntity();
+                const newUser = new this.userModel();
                 newUser.name = user.name;
                 newUser.username = user.username;
                 newUser.email = user.email;
@@ -26,7 +27,7 @@ export class UserService {
                 newUser.password = passHash;
                 newUser.role = UserRole.USER;
 
-                return from(this.userRepo.save(newUser)).pipe(
+                return from(this.userModel.create(newUser)).pipe(
                     map((resUser: User) => {
                         const { password, ...result } = resUser;
                         return result;
@@ -38,7 +39,7 @@ export class UserService {
     }
 
     findOne(id: any): Observable<User> {
-        return from(this.userRepo.findOne(id)).pipe(
+        return from(this.userModel.findOne(id)).pipe(
             map((resUser: User) => {
                 const { password, ...result } = resUser;
                 return result;
@@ -48,7 +49,7 @@ export class UserService {
     }
 
     findByEmail(email: string): Observable<User> {
-        return from(this.userRepo.findOne({ where: { email }, select: ['password', 'username', 'email', 'name', 'role', '_id', 'profilePic'] }));
+        return from(this.userModel.findOne({ where: { email }, select: ['password', 'username', 'email', 'name', 'role', '_id', 'profilePic'] }));
     }
 
     findAll(page, take, search, sort): Observable<User[]> {
@@ -76,7 +77,7 @@ export class UserService {
             }
         }
 
-        return from(this.userRepo.find({ ...query, take, skip: (page - 1) * take, relations: ['blogEntries'] })).pipe(
+        return from(this.userModel.find({ ...query, take, skip: (page - 1) * take, relations: ['blogEntries'] })).pipe(
             map((resUserArr: User[]) => {
                 resUserArr.forEach(usr => delete usr.password);
                 return resUserArr;
@@ -99,12 +100,12 @@ export class UserService {
             }
         };
 
-        return from(this.userRepo.count(query));
+        return from(this.userModel.count(query));
     }
 
 
     deleteOne(id: any): Observable<any> {
-        return from(this.userRepo.delete(Number(id))).pipe(
+        return from(this.userModel.deleteOne(id)).pipe(
             map(result => {
                 if (result) {
                     return { message: 'deleted', 'success': true }
@@ -115,20 +116,20 @@ export class UserService {
         )
     }
 
-    updateOne(id: any, user: User): Observable<any> {
+    updateOne(id: any, user: any): Observable<any> {
         delete user.password;
         delete user.email;
         delete user.role;
-        return from(this.userRepo.update(id, user));
+        return from(this.userModel.updateOne(id, user));
     }
 
-    updateRoleOfUser(id: any, user: User): Observable<any> {
-        return from(this.userRepo.update(id, user));
+    updateRoleOfUser(id: any, user: any): Observable<any> {
+        return from(this.userModel.updateOne(id, user));
     }
 
-    updateProfilePic(id: any, user: User): Observable<any> {
-        // return from(this.userRepo.update(id, user))
-        return from(this.userRepo.update(id, user)).pipe(
+    updateProfilePic(id: any, user: any): Observable<any> {
+        // return from(this.userModel.update(id, user))
+        return from(this.userModel.updateOne(id, user)).pipe(
             map(res => {
                 if (res) {
                     return { success: true, message: 'profile updated successfully !' }

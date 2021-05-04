@@ -1,37 +1,40 @@
 import { UserRole } from "src/user/user.model";
-import { BlogEntity } from "src/blog/blog.entity";
-import { BeforeInsert, Column, Entity, JoinColumn, ObjectIdColumn, OneToMany, PrimaryColumn ,ObjectID, PrimaryGeneratedColumn} from "typeorm";
-import { Blog } from "src/blog/blog.model";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
+import { Blog } from "src/blog/blog.entity";
 
-@Entity()
-export class UserEntity {
 
-    @PrimaryGeneratedColumn()
-    _id: number;
+export type UserDocument = User & Document
 
-    @Column()
+@Schema()
+export class User {
+
+    @Prop()
+    _id: string;
+
+    @Prop()
     name: string
 
-    @Column({ unique: true })
+    @Prop({ unique: true })
     username: string
 
-    @Column({ select: false })
+    @Prop({ select: false })
     password: string
 
-    @Column({ unique: true })
+    @Prop({ unique: true })
     email: string
 
-    @Column()
+    @Prop()
     profilePic: string
 
-    @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+    @Prop({ type: 'enum', enum: UserRole, default: UserRole.USER })
     role: UserRole
 
-    @OneToMany(type => BlogEntity, blog => blog.author)
+    // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Owner' })
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }] })
     blogEntries: Blog[];
 
-    @BeforeInsert()
-    emailToLowerCase() {
-        this.email = this.email.toLowerCase();
-    }
 }
+
+export const UserSchema = SchemaFactory.createForClass(User);

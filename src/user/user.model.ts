@@ -1,8 +1,7 @@
 import { Blog } from "src/blog/blog.model";
-import { ObjectID } from 'typeorm'
 
 export interface User {
-    _id?: number;
+    _id?: string;
     name?: string;
     username?: string;
     email?: string;

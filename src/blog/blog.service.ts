@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { from, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { FindManyOptions, Repository } from 'typeorm';
-import { BlogEntity } from './blog.entity';
-import { Blog } from './blog.model';
-
+// import { Blog } from './blog.model';
+import { Blog, BlogDocument } from './blog.entity';
 const slugify = require('slugify');
 
 @Injectable()
 export class BlogService {
 
-    constructor(
-        @InjectRepository(BlogEntity) private readonly blogRepo: Repository<BlogEntity>,
-    ) { }
+    constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) { }
 
     create(user: any, blog: Blog): Observable<Blog> {
         delete user.iat
@@ -22,7 +19,7 @@ export class BlogService {
         return this.generateSlug(blog.title).pipe(
             switchMap((slug: string) => {
                 blog.slug = slug;
-                return from(this.blogRepo.save(blog));
+                return from(this.blogModel.create(blog));
             })
         )
     }
@@ -52,7 +49,7 @@ export class BlogService {
         //     }
         // }
 
-        return from(this.blogRepo.find({
+        return from(this.blogModel.find({
             ...options,
             relations: ["author"], take: 10,
             skip: (page - 1) * take
@@ -61,7 +58,7 @@ export class BlogService {
 
     findByUserId(id: number, page, take, search, sort): Observable<Blog[]> {
 
-        let options: FindManyOptions = {
+        let options: any = {
             relations: ["author"],
             take: 10,
             skip: (page - 1) * take,
@@ -82,11 +79,11 @@ export class BlogService {
             }
         }
 
-        return from(this.blogRepo.find(options));
+        return from(this.blogModel.find(options));
     }
 
     countDbDocs(search: string = '', userId: number = null): Observable<number> {
-        let options: FindManyOptions = {};
+        let options: any = {};
 
         // if (userId != null && userId != undefined) {
         //     options = { where: { author: userId } }
@@ -106,18 +103,18 @@ export class BlogService {
             }
         }
 
-        return from(this.blogRepo.count())
+        return from(this.blogModel.count())
     }
 
     findOneById(id: any): Observable<Blog> {
-        return from(this.blogRepo.findOne(id, { relations: ['author'] }))
+        return from(this.blogModel.findOne(id, { relations: ['author'] }))
         // .pipe(
         //     tap(res => console.log(res))
         // )
     }
 
     updateOne(id, blog): Observable<Blog> {
-        return from(this.blogRepo.update(id, blog)).pipe(
+        return from(this.blogModel.update(id, blog)).pipe(
             switchMap(() => this.findOneById(id))
         )
     }

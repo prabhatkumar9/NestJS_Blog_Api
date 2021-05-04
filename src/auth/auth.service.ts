@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/user/user.model';
 import { from, Observable, throwError } from 'rxjs';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserEntity } from 'src/user/user.entity';
 import { catchError, map } from 'rxjs/operators';
-import { BlogEntity } from 'src/blog/blog.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Blog, BlogDocument } from 'src/blog/blog.entity';
+import { User, UserDocument } from 'src/user/user.entity';
 const bcrypt = require('bcrypt');
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
-        @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
-        @InjectRepository(BlogEntity) private readonly blogRepo: Repository<BlogEntity>
+        @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
     ) { }
 
     generateJWT(user: User): Observable<string> {
@@ -33,7 +32,7 @@ export class AuthService {
     /// ********** users funcs ******************
     findUser(id: any): Observable<any> {
         console.log("id :::::::: ", id);
-        return from(this.userRepo.findOne(id)).pipe(
+        return from(this.userModel.findOne(id)).pipe(
             map((resUser: User) => {
                 const { password, ...result } = resUser;
                 return result;
@@ -44,8 +43,8 @@ export class AuthService {
 
 
     // *********** blogs funcs *******************
-    findBlogById(id: number) {
-        return from(this.blogRepo.findOne(id, { relations: ['author'] }));
+    findBlogById(id: any) {
+        return from(this.blogModel.findOne(id, { relations: ['author'] }));
     }
 
 

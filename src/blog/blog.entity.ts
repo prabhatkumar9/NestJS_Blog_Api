@@ -1,49 +1,49 @@
-import { UserEntity } from "src/user/user.entity";
-import { User } from "src/user/user.model";
-import { BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn, PrimaryGeneratedColumn,ObjectID } from "typeorm";
 
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
+import { User } from 'src/user/user.entity';
 
-@Entity('blog_entry')
-export class BlogEntity {
+export type BlogDocument = Blog & Document
 
-    @PrimaryGeneratedColumn()
-    _id: number;
+@Schema()
+export class Blog {
 
-    @Column()
+    @Prop()
+    _id: string;
+
+    @Prop()
     title: string;
 
-    @Column()
+    @Prop()
     slug: string;
 
-    @Column()
+    @Prop()
     description: string;
 
-    @Column()
+    @Prop()
     body: string;
 
-    @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" })
+    @Prop({ type: 'timestamp', default: () => "CURRENT_TIME" })
     createdAt: Date;
 
-    @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" })
+    @Prop({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" })
     updatedAt: Date;
 
-    @BeforeUpdate()
-    updateTimeStamp() {
-        this.updatedAt = new Date;
-    }
-
-    @Column({ default: 0 })
+    @Prop()
     likes: number;
 
-    @Column({ default: 0 })
+    @Prop()
     headerImage: string
 
-    @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" })
+    @Prop()
     publishedAt: Date;
 
-    @Column({ default: false })
+    @Prop()
     isPublished: boolean;
 
-    @ManyToOne(type => UserEntity, user => user.blogEntries)
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
     author: User;
 }
+
+export const BlogSchema = SchemaFactory.createForClass(Blog);
