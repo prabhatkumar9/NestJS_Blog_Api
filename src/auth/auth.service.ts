@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { Blog, BlogDocument } from 'src/blog/blog.entity';
 import { User, UserDocument } from 'src/user/user.entity';
 import { IUser } from 'src/user/user.model';
+import { ObjectId } from 'bson';
 const bcrypt = require('bcrypt');
 
 @Injectable()
@@ -17,7 +18,7 @@ export class AuthService {
         @InjectModel(User.name) private userModel: Model<UserDocument>,
     ) { }
 
-    generateJWT(user: User): Observable<string> {
+    generateJWT(user: IUser): Observable<string> {
         return from(this.jwtService.signAsync(user));
     }
 
@@ -31,12 +32,14 @@ export class AuthService {
 
 
     /// ********** users funcs ******************
-    findUser(id: any): Observable<any> {
+    findUser(id: ObjectId): Observable<any> {
         // console.log("id :::::::: ", id);
-        return from(this.userModel.findOne(id)).pipe(
+        // id = ObjectId;
+
+        return from(this.userModel.findOne({ _id: id }).select('username email name role _id')).pipe(
             map((resUser: IUser) => {
-                const { password, ...result } = resUser;
-                return result;
+                // console.log(resUser);
+                return resUser;
             }),
             catchError(err => throwError(err))
         )
@@ -45,7 +48,7 @@ export class AuthService {
 
     // *********** blogs funcs *******************
     findBlogById(id: any) {
-        return from(this.blogModel.findOne(id, { relations: ['author'] }));
+        return from(this.blogModel.findOne({ _id: id }).populate('author'));
     }
 
 

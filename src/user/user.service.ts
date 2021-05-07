@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { IUser, UserRole } from './user.model';
+import { IUser } from './user.model';
 import { User, UserDocument } from './user.entity';
 import { from, Observable, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { AuthService } from 'src/auth/auth.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 
 
@@ -20,17 +21,18 @@ export class UserService {
         return this.authService.hashPassword(user.password).pipe(
             switchMap((passHash: string) => {
                 const newUser = new this.userModel();
+                newUser._id = new mongoose.Types.ObjectId();
                 newUser.name = user.name;
                 newUser.username = user.username;
-                newUser.email = user.email;
+                newUser.email = user.email.toLowerCase();
                 newUser.profilePic = '';
                 newUser.password = passHash;
-                newUser.role = UserRole.USER;
 
                 return from(this.userModel.create(newUser)).pipe(
                     map((resUser: IUser) => {
-                        const { password, ...result } = resUser;
-                        return result;
+                        const { _id, name, username, profilePic, email } = resUser;
+                        // console.log("user  :: ", _id, name, username, profilePic, email);
+                        return { _id, name, username, profilePic, email };
                     }),
                     catchError(err => throwError(err))
                 )
@@ -38,67 +40,54 @@ export class UserService {
         )
     }
 
-    findOne(id: any): Observable<any> {
-        return from(this.userModel.findOne(id)).pipe(
-            map((resUser: User) => {
-                const { password, ...result } = resUser;
-                return result;
+    findOne(id: string): Observable<IUser> {
+        return from(this.userModel.findOne({ _id: id })).pipe(
+            map((resUser: IUser) => {
+                return resUser;
             }),
             catchError(err => throwError(err))
         )
     }
 
-    findByEmail(email: string): Observable<UserDocument> {
-        return from(this.userModel.findOne({ where: { email }, select: ['password', 'username', 'email', 'name', 'role', '_id', 'profilePic'] }));
+    findByEmail(email: string): Observable<IUser> {
+        return from(this.userModel.findOne({ email: email }).select('username password email name role _id'));
     }
 
-    findAll(page, take, search, sort): Observable<User[]> {
+    findAll(page, take, search, sort): Observable<IUser[]> {
         let query = {};
-        if (search) {
+        if (search != '' && search != undefined) {
             query = {
-                where: {
-                    $or: [
-                        { name: new RegExp(search.toString(), 'i') },
-                        { username: new RegExp(search.toString(), 'i') },
-                        { email: new RegExp(search.toString(), 'i') },
-                    ]
-                }
+                $or: [
+                    { name: new RegExp(search.toString(), 'i') },
+                    { username: new RegExp(search.toString(), 'i') },
+                    { email: new RegExp(search.toString(), 'i') },
+                ]
             }
         }
 
-        if (sort) {
-            query = {
-                ...query,
-                order: {
-                    name: sort.toString().toUpperCase()
-                }
-            }
-        }
-
-        return from(this.userModel.find({ ...query, take, skip: (page - 1) * take, relations: ['blogEntries'] })).pipe(
-            map((resUserArr: User[]) => {
-                resUserArr.forEach(usr => delete usr.password);
+        return from(this.userModel.find(query).sort({ name: sort }).skip((page - 1) * take).limit(take)).pipe(
+            map((resUserArr: IUser[]) => {
+                // resUserArr.forEach(usr => delete usr.password);
+                // console.log(resUserArr);
                 return resUserArr;
             }),
             catchError(err => throwError(err))
         )
     }
 
-    countDbDocs(search): Observable<any> {
+    countDbDocs(search): Observable<number> {
         let query = {};
         if (search) {
             query = {
-                where: {
-                    $or: [
-                        { name: new RegExp(search.toString(), 'i') },
-                        { username: new RegExp(search.toString(), 'i') },
-                        { email: new RegExp(search.toString(), 'i') },
-                    ]
-                }
+                $or: [
+                    { name: new RegExp(search.toString(), 'i') },
+                    { username: new RegExp(search.toString(), 'i') },
+                    { email: new RegExp(search.toString(), 'i') },
+                ]
             }
         };
 
-        return from(this.userModel.count(query));
+        return from(this.userModel.countDocuments(query));
     }
 
 
@@ -114,11 +103,15 @@ export class UserService {
         )
     }
 
-    updateOne(id: any, user: any): Observable<any> {
+    updateOne(id: any, user: IUser): Observable<any> {
         delete user.password;
         delete user.email;
         delete user.role;
-        return from(this.userModel.updateOne(id, user));
+        return from(this.userModel.updateOne({ _id: id }, user)).pipe(
+            // tap(res => console.log('result :: ', res)),
+            map(res => { if (res) return true }),
+            catchError(err => { if (err) return throwError(false) })
+        );
     }
 
     updateRoleOfUser(id: any, user: any): Observable<any> {
@@ -141,29 +134,32 @@ export class UserService {
 
     /// ************************ ///
     // ---authentication funcs--- //
-    login(user: User): Observable<string> {
+    login(user: IUser): Observable<string> {
         return this.validateUser(user.email, user.password).pipe(
-            switchMap((usr: User) => {
+            switchMap((usr: IUser) => {
                 if (usr) {
                     return this.authService.generateJWT(usr).pipe(
                         map((token: string) => token)
                     )
                 } else {
-                    return 'Wrong credentials..!'
+                    return 'Wrong credentials..!';
                 }
+            }),
+            catchError(err => {
+                return throwError('Wrong credentials..!');
             })
         )
     }
 
     validateUser(email: string, password: string): Observable<any> {
         return this.findByEmail(email).pipe(
-            switchMap((user: User) => {
+            switchMap((user: IUser) => {
                 // console.log(user);
                 return this.authService.ComparePassword(password, user.password).pipe(
                     map((match: boolean) => {
                         if (match) {
-                            const { password, profilePic, ...result } = user;
-                            return result;
+                            const { username, email, name, role, _id } = user;
+                            return { username, email, name, role, _id };
                         } else {
                             throw Error;
                         }

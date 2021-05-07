@@ -2,17 +2,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
-import { User } from 'src/user/user.entity';
-import { IUser } from 'src/user/user.model';
 import { ObjectId } from 'bson';
 
 export type BlogDocument = Blog & Document
 
-@Schema()
+@Schema({ timestamps: true })
 export class Blog {
 
     // @Prop()
-    // _id: string;
+    // _id: ObjectId;
 
     @Prop()
     title: string;
@@ -25,12 +23,6 @@ export class Blog {
 
     @Prop()
     body: string;
-
-    @Prop({ type: 'timestamp', default: () => "CURRENT_TIME" })
-    createdAt: Date;
-
-    @Prop({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" })
-    updatedAt: Date;
 
     @Prop()
     likes: number;

@@ -2,18 +2,16 @@ import { UserRole } from "src/user/user.model";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
-import { Blog } from "src/blog/blog.entity";
-import { IBlog } from "src/blog/blog.model";
 import { ObjectId } from "bson";
 
 
 export type UserDocument = User & Document
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
 
     // @Prop()
-    // _id: string;
+    // _id: ObjectId;
 
     @Prop()
     name: string
@@ -30,10 +28,9 @@ export class User {
     @Prop()
     profilePic: string
 
-    @Prop({ type: 'enum', enum: UserRole, default: UserRole.USER })
+    @Prop({ type: String, enum: Object.values(UserRole), default: UserRole.USER })
     role: UserRole
 
-    // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Owner' })
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }] })
     blogEntries: ObjectId[];
 

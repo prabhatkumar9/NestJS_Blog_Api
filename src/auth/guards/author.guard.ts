@@ -24,7 +24,7 @@ export class AuthorGuard implements CanActivate {
                         // console.log(blog);
                         let hasPermission: boolean = false;
 
-                        if (blog.author._id === usr._id) {
+                        if (blog.author === usr._id) {
                             hasPermission = true;
                         }
 

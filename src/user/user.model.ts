@@ -10,6 +10,8 @@ export interface IUser {
     password?: string;
     role?: UserRole;
     profilePic?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
     blogEntries?: ObjectId[];
 }
 
