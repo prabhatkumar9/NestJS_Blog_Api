@@ -13,8 +13,8 @@ export class BlogService {
 
     constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) { }
 
-    create(user: IUser, blog: IBlog): Observable<BlogDocument> {
-        blog.author = user._id;
+    create(user_id: any, blog: IBlog): Observable<IBlog> {
+        blog.author = user_id;
         return this.generateSlug(blog.title).pipe(
             switchMap((slug: string) => {
                 blog.slug = slug;
@@ -28,81 +28,43 @@ export class BlogService {
     }
 
     findAll(page, take, search, sort): Observable<IBlog[]> {
-
         let options: any = {};
-
-        if (search) {
+        if (search != '' && search != undefined) {
             options = {
-                where: {
-                    title: new RegExp(search.toString(), 'i')
-                }
+                $or: [{ title: new RegExp(search.toString(), 'i') }]
             }
         }
-
-        // if (sort) {
-        //     options = {
-        //         ...options,
-        //         order: {
-        //             title: sort.toString().toUpperCase()
-        //         }
-        //     }
-        // }
-
-        return from(this.blogModel.find({
-            ...options,
-            relations: ["author"], take: 10,
-            skip: (page - 1) * take
-        }));
+        return from(this.blogModel.find(options).sort({ createdAt: sort }).skip((page - 1) * take).limit(take).populate({ path: 'author', select: ['name', 'email', 'username'] }));
     }
 
-    findByUserId(id: number, page, take, search, sort): Observable<IBlog[]> {
-
-        let options: any = {
-            relations: ["author"],
-            take: 10,
-            skip: (page - 1) * take,
-            where: { author: id }
-        };
-
-        if (search) {
-            delete options.where
-            options = {
-                ...options, where: {
-                    $or: [
-                        { title: new RegExp(search.toString(), 'i') },
-                        { slug: new RegExp(search.toString(), 'i') },
-                        { description: new RegExp(search.toString(), 'i') },
-                    ],
-                    $and: [{ author: id }]
-                }
-            }
-        }
-
-        return from(this.blogModel.find(options));
-    }
-
-    countDbDocs(search: string = '', userId: number = null): Observable<number> {
+    findByUserId(id: string, page, take, search, sort): Observable<IBlog[]> {
         let options: any = {};
 
-        // if (userId != null && userId != undefined) {
-        //     options = { where: { author: userId } }
-        // }
+        if (id != null && id != undefined && id != '') {
+            options = { author: id }
+        }
 
         if (search != '' && search != undefined) {
-            // delete options.where
             options = {
-                ...options, where: {
-                    $or: [
-                        { title: new RegExp(search.toString(), 'i') },
-                        { slug: new RegExp(search.toString(), 'i') },
-                        { description: new RegExp(search.toString(), 'i') },
-                    ],
-
-                }
+                ...options,
+                $or: [{ title: new RegExp(search.toString(), 'i') }]
             }
         }
+        return from(this.blogModel.find(options).sort({ createdAt: sort }).skip((page - 1) * take).limit(take).populate({ path: 'author', select: ['name', 'email', 'username'] }));
+    }
 
-        return from(this.blogModel.count())
+    countDbDocs(search: string = '', userId: any = ''): Observable<number> {
+        let options: any = {};
+
+        if (userId != null && userId != undefined) {
+            options = { author: userId }
+        }
+
+        if (search != '' && search != undefined) {
+            options = { ...options, title: new RegExp(search.toString(), 'i') }
+        }
+
+        return from(this.blogModel.countDocuments(options));
     }
 
     findOneById(id: any): Observable<IBlog> {

@@ -25,13 +25,13 @@ export class User {
     @Prop({ unique: true })
     email: string
 
-    @Prop()
+    @Prop({ select: false })
     profilePic: string
 
-    @Prop({ type: String, enum: Object.values(UserRole), default: UserRole.USER })
+    @Prop({ type: String, enum: Object.values(UserRole), default: UserRole.USER, select: false })
     role: UserRole
 
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }] })
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }], select: false })
     blogEntries: ObjectId[];
 
 }
