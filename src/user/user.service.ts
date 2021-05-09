@@ -8,8 +8,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as mongoose from 'mongoose';
 
-
-
 @Injectable()
 export class UserService {
     constructor(
@@ -67,8 +65,6 @@ export class UserService {
 
         return from(this.userModel.find(query).sort({ name: sort }).skip((page - 1) * take).limit(take)).pipe(
             map((resUserArr: IUser[]) => {
-                // resUserArr.forEach(usr => delete usr.password);
-                // console.log(resUserArr);
                 return resUserArr;
             }),
             catchError(err => throwError(err))
@@ -90,17 +86,8 @@ export class UserService {
         return from(this.userModel.countDocuments(query));
     }
 
-
     deleteOne(id: any): Observable<any> {
-        return from(this.userModel.deleteOne(id)).pipe(
-            map(result => {
-                if (result) {
-                    return { message: 'deleted', 'success': true }
-                } else {
-                    return { message: 'error', 'success': false }
-                }
-            })
-        )
+        return from(this.userModel.deleteOne({ _id: id }));
     }
 
     updateOne(id: any, user: IUser): Observable<any> {
@@ -120,15 +107,7 @@ export class UserService {
 
     updateProfilePic(id: any, user: any): Observable<any> {
         // return from(this.userModel.update(id, user))
-        return from(this.userModel.updateOne(id, user)).pipe(
-            map(res => {
-                if (res) {
-                    return { success: true, message: 'profile updated successfully !' }
-                } else {
-                    return { success: false, message: 'something went wrong !' }
-                }
-            })
-        )
+        return from(this.userModel.updateOne({ _id: id }, user))
     }
 
 

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query, Request } from '@nestjs/common';
 import { IUser, UserRole } from 'src/user/user.model';
-import { forkJoin, from, Observable, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { forkJoin, from, Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -42,7 +42,7 @@ export class UserController {
     }
 
     @Post('login')
-    login(@Body() body: IUser): Observable<any> {
+    login(@Body() body: IUser): Observable<IResponse> {
         return this.userService.login(body).pipe(
             map((token: string) => {
                 let response: IResponse = {
@@ -65,8 +65,24 @@ export class UserController {
     @hasRoles(UserRole.ADMIN)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Get(':id')
-    findOne(@Param() params): Observable<IUser> {
-        return this.userService.findOne(params.id);
+    findOne(@Param() params): Observable<IResponse> {
+        return this.userService.findOne(params.id).pipe(
+            map(res => {
+                let response: IResponse = {
+                    success: true,
+                    message: "user found...",
+                    data: res
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "user not found..!" + err,
+                }
+                return throwError(response);
+            })
+        )
     }
 
     @hasRoles(UserRole.ADMIN)
@@ -78,38 +94,57 @@ export class UserController {
         @Query('search') search: string = '',
         @Query('sort') sort: number = 1,
 
-    ): Observable<any> {
+    ): Observable<IResponse> {
         let count$ = this.userService.countDbDocs(search);
         let data$ = this.userService.findAll(page, take, search, sort);
-        return from(forkJoin({ count: count$, data: data$ }));
+        return from(forkJoin({ count: count$, data: data$ })).pipe(
+            map((data) => {
+                let response: IResponse = {
+                    success: true,
+                    message: "user list found...",
+                    count: data.count,
+                    data: data.data
+                }
+                return response;
+            })
+        );
     }
-
 
     @hasRoles(UserRole.ADMIN)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Delete(':id')
-    deleteOne(@Param('id') id: any): Observable<any> {
-        return this.userService.deleteOne(id);
+    deleteOne(@Param('id') id: any): Observable<IResponse> {
+        return this.userService.deleteOne(id).pipe(
+            map(usr => {
+                let response: IResponse = {
+                    success: true,
+                    message: "user deleted successfully !",
+                    data: usr,
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "some error occurred",
+                    data: err,
+                }
+                return throwError(response);
+            })
+        )
     }
 
     @UseGuards(JwtAuthGuard, UserIsUser)
     @Put(':id')
     UpdateOne(@Param('id') id: any, @Body() user: IUser): Observable<IResponse> {
         return this.userService.updateOne(id, user).pipe(
-            switchMap(res => {
+            map(res => {
                 let response: IResponse = {
                     message: 'updated successfully !',
                     success: true,
                     data: res
                 }
-                if (res == false) {
-                    response = {
-                        data: res,
-                        message: 'updation failed !',
-                        success: false
-                    }
-                }
-                return of(response);
+                return response;
             }),
             catchError(err => {
                 let response: IResponse = {
@@ -117,7 +152,6 @@ export class UserController {
                     success: false,
                     data: err
                 }
-
                 return of(response);
             })
         )
@@ -126,25 +160,59 @@ export class UserController {
     @hasRoles(UserRole.ADMIN)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Put(':id/role')
-    updateUserRole(@Param('id') id: any, @Body() body: any): Observable<any> {
-        return this.userService.updateRoleOfUser(id, body);
+    updateUserRole(@Param('id') id: any, @Body() body: any): Observable<IResponse> {
+        return this.userService.updateRoleOfUser(id, body).pipe(
+            map(res => {
+                let response: IResponse = {
+                    success: true,
+                    message: "role updated successfully...",
+                    data: res,
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "some error occurred",
+                    data: err,
+                }
+                return throwError(response);
+            })
+        )
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('uploadProfile')
-    uploadFile(@Body() user: IUser, @Request() req): Observable<any> {
-        return this.userService.updateProfilePic(Number(req.user.user._id), user);
+    uploadFile(@Body() user: IUser, @Request() req): Observable<IResponse> {
+        return this.userService.updateProfilePic(req.user.user._id, user).pipe(
+            map(res => {
+                let response: IResponse = {
+                    success: true,
+                    message: "profile updated successfully...",
+                    data: res,
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "some error occurred",
+                    data: err,
+                }
+                return throwError(response);
+            })
+        )
     }
 
 }
 
 //  {
-    //     storage: diskStorage({
-    //         destination: '../uploads/profileimages',
-    //         filename: (res, file, cb) => {
-    //             const filename: string = path.parse(file.originalname).name.replace(/\s/g, '') + 'fjs';
-    //             const extnsn: string = path.parse(file.originalname).ext;
-    //             cb(null, `${ filename }${ extnsn }`)
-    //         }
-    //     })
-    // }
+//     storage: diskStorage({
+//         destination: '../uploads/profileimages',
+//         filename: (res, file, cb) => {
+//             const filename: string = path.parse(file.originalname).name.replace(/\s/g, '') + 'fjs';
+//             const extnsn: string = path.parse(file.originalname).ext;
+//             cb(null, `${ filename }${ extnsn }`)
+//         }
+//     })
+// }
