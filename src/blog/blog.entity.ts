@@ -4,13 +4,11 @@ import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { ObjectId } from 'bson';
 
+
 export type BlogDocument = Blog & Document
 
 @Schema({ timestamps: true })
 export class Blog {
-
-    // @Prop()
-    // _id: ObjectId;
 
     @Prop()
     title: string;

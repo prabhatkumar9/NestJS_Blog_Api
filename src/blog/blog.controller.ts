@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, Request, UseGuards, Query, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards, Query, Param, Put, Delete } from '@nestjs/common';
 import { forkJoin, from, Observable, of, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { IResponse } from 'src/auth/decorator/response.Object';
 import { AuthorGuard } from 'src/auth/guards/author.guard';
 import { JwtAuthGuard } from 'src/auth/guards/guard';
@@ -33,7 +33,8 @@ export class BlogController {
                     message: "Some error while saving blog...",
                     data: err,
                 }
-                return throwError(response)
+                throwError(err);
+                return of(response);
             })
         )
     }
@@ -43,20 +44,20 @@ export class BlogController {
         @Query('userId') userId: string,
         @Query('page') page: number | string = 1,
         @Query('take') take: number | string = 10,
-        @Query('search') search: string = '',
+        @Query('search') search: string,
         @Query('sort') sort: number = 1,
     ): Observable<IResponse> {
         let count$: Observable<number>;
         let blogs$: Observable<IBlog[]>;
 
-        if (userId == null && userId == '' && userId == undefined) {
-            // console.log("without user id ");
-            count$ = this.blogService.countDbDocs(search);
-            blogs$ = this.blogService.findAll(page, take, search, sort);
-        } else {
-            // console.log("with user id ");
+        if (userId || search) {
+            // console.log("with user id ", userId, search);
             count$ = this.blogService.countDbDocs(search, userId);
             blogs$ = this.blogService.findByUserId(userId, page, take, search, sort);
+        }
+        else {
+            count$ = this.blogService.countDbDocs()
+            blogs$ = this.blogService.findAll(page, take, search, sort)
         }
 
         return forkJoin({ count: count$, data: blogs$ }).pipe(
@@ -65,7 +66,7 @@ export class BlogController {
                     success: true,
                     message: "list fetched successfully...",
                     count: data.count,
-                    data: data.data
+                    data: data.data,
                 }
                 return response;
             }),
@@ -75,20 +76,82 @@ export class BlogController {
                     message: "list fetched failed...",
                     data: err
                 }
-                return throwError(response);
+                throwError(err);
+                return of(response);
             })
         )
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string): Observable<any> {
-        console.log("blog id  :: ", id);
-        return this.blogService.findOneById(id);
+    findOne(@Param('id') id: string): Observable<IResponse> {
+        // console.log("blog id  :: ", id);
+        return this.blogService.findOneById(id).pipe(
+            map(res => {
+                let response: IResponse = {
+                    success: true,
+                    message: "blog fetched successfully...",
+                    data: res
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "blog not found...",
+                    data: err
+                }
+                throwError(err)
+                return of(response);
+            })
+        )
     }
 
     @UseGuards(JwtAuthGuard, AuthorGuard)
     @Put(':id')
-    updateOne(@Param('id') id: string, @Body() blog: IBlog): Observable<IBlog> {
-        return this.blogService.updateOne(id, blog);
+    updateOne(@Param('id') id: string, @Body() blog: IBlog): Observable<IResponse> {
+        return this.blogService.updateOne(id, blog).pipe(
+            map(res => {
+                let response: IResponse = {
+                    success: true,
+                    message: "blog updated successfully...",
+                    data: res
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "blog not updated...",
+                    data: err
+                }
+                throwError(err);
+                return of(response);
+            })
+        )
+    }
+
+    @UseGuards(JwtAuthGuard, AuthorGuard)
+    @Delete(':id')
+    deleteByID(@Param('id') id: string): Observable<IResponse> {
+        return this.blogService.deleteByID(id).pipe(
+            map(res => {
+                // console.log(res);
+                let response: IResponse = {
+                    success: true,
+                    message: "blog deleted successfully...",
+                    data: res
+                }
+                return response;
+            }),
+            catchError(err => {
+                let response: IResponse = {
+                    success: false,
+                    message: "blog not deleted...",
+                    data: err
+                }
+                throwError(err)
+                return of(response);
+            })
+        )
     }
 }

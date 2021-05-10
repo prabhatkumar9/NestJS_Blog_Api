@@ -15,19 +15,17 @@ export class AuthorGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const user: IUser = request.user.user;
         const params = request.params;
-        // console.log("params :: ", params);
 
         return this.authService.findUser(user._id).pipe(
             switchMap((usr: IUser) => {
                 return this.authService.findBlogById(params.id).pipe(
-                    map((blog: IBlog) => {
-                        // console.log(blog);
+                    map((blog: any) => {
                         let hasPermission: boolean = false;
 
-                        if (blog.author === usr._id) {
+                        if (blog.author._id.toString(2) == usr._id.toString()) {
                             hasPermission = true;
+                            // console.log("yes there is true");
                         }
-
                         return usr && hasPermission;
                     })
                 )

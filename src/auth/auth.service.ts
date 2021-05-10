@@ -33,12 +33,8 @@ export class AuthService {
 
     /// ********** users funcs ******************
     findUser(id: ObjectId): Observable<any> {
-        // console.log("id :::::::: ", id);
-        // id = ObjectId;
-
         return from(this.userModel.findOne({ _id: id }).select('username email name role _id')).pipe(
             map((resUser: IUser) => {
-                // console.log(resUser);
                 return resUser;
             }),
             catchError(err => throwError(err))
@@ -48,7 +44,7 @@ export class AuthService {
 
     // *********** blogs funcs *******************
     findBlogById(id: any) {
-        return from(this.blogModel.findOne({ _id: id }).populate('author'));
+        return from(this.blogModel.findOne({ _id: id }).populate({ path: 'author', select: ['name', 'email', 'username'] }));
     }
 
 
