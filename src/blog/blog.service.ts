@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { from, Observable, of } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { IBlog } from './blog.model';
 import { Blog, BlogDocument } from './blog.entity';
-import { IUser } from 'src/user/user.model';
 const slugify = require('slugify');
 
 @Injectable()
@@ -15,6 +14,7 @@ export class BlogService {
 
     create(user_id: any, blog: IBlog): Observable<IBlog> {
         blog.author = user_id;
+        // category will already come with blog body
         return this.generateSlug(blog.title).pipe(
             switchMap((slug: string) => {
                 blog.slug = slug;

@@ -106,6 +106,15 @@ export class UserController {
                     data: data.data
                 }
                 return response;
+            }),
+            catchError((err: any) => {
+                let response: IResponse = {
+                    success: false,
+                    message: "some error Found",
+                    data: err
+                }
+                // console.log(err);
+                return of(response);
             })
         );
     }

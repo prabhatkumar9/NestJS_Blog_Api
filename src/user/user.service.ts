@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IUser } from './user.model';
 import { User, UserDocument } from './user.entity';
 import { from, Observable, throwError } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/auth/auth.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -52,38 +52,36 @@ export class UserService {
     }
 
     findAll(page, take, search, sort): Observable<IUser[]> {
-        let query = {};
         if (search != '' && search != undefined) {
-            query = {
+            let query = {
                 $or: [
                     { name: new RegExp(search.toString(), 'i') },
                     { username: new RegExp(search.toString(), 'i') },
                     { email: new RegExp(search.toString(), 'i') },
                 ]
             }
-        }
 
-        return from(this.userModel.find(query).sort({ name: sort }).skip((page - 1) * take).limit(take)).pipe(
-            map((resUserArr: IUser[]) => {
-                return resUserArr;
-            }),
-            catchError(err => throwError(err))
-        )
+            return from(this.userModel.find(query).sort({ name: sort }).skip((page - 1) * take).limit(take));
+        }
+        else {
+            return from(this.userModel.find().sort({ name: sort }).skip((page - 1) * take).limit(take));
+        }
     }
 
     countDbDocs(search): Observable<number> {
-        let query = {};
         if (search) {
-            query = {
+            let query = {
                 $or: [
                     { name: new RegExp(search.toString(), 'i') },
                     { username: new RegExp(search.toString(), 'i') },
                     { email: new RegExp(search.toString(), 'i') },
                 ]
             }
-        };
-
-        return from(this.userModel.countDocuments(query));
+            return from(this.userModel.countDocuments(query));
+        }
+        else {
+            return from(this.userModel.countDocuments());
+        }
     }
 
     deleteOne(id: any): Observable<any> {

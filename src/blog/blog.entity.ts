@@ -36,6 +36,9 @@ export class Blog {
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
     author: ObjectId;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Category' })
+    category: ObjectId;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);
