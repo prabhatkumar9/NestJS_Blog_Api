@@ -29,6 +29,12 @@ export class Blog {
     headerImage: string
 
     @Prop()
+    status: string
+    
+    @Prop()
+    comments: Array<Object>
+
+    @Prop()
     publishedAt: Date;
 
     @Prop()

@@ -11,6 +11,8 @@ export interface IBlog {
     updatedAt?: Date;
     likes?: number;
     headerImage?: string
+    status?: string
+    comments?: Array<Object>,
     publishedAt?: Date;
     isPublished?: boolean;
     author?: ObjectId;
